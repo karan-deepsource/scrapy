@@ -13,9 +13,7 @@ from scrapy.utils.request import request_from_dict
 
 
 def _with_mkdir(queue_class):
-
     class DirectoriesCreated(queue_class):
-
         def __init__(self, path, *args, **kwargs):
             dirname = os.path.dirname(path)
             if not os.path.exists(dirname):
@@ -26,9 +24,7 @@ def _with_mkdir(queue_class):
 
 
 def _serializable_queue(queue_class, serialize, deserialize):
-
     class SerializableQueue(queue_class):
-
         def push(self, obj):
             s = serialize(obj)
             super().push(s)
@@ -48,7 +44,9 @@ def _serializable_queue(queue_class, serialize, deserialize):
             try:
                 s = super().peek()
             except AttributeError as ex:
-                raise NotImplementedError("The underlying queue class does not implement 'peek'") from ex
+                raise NotImplementedError(
+                    "The underlying queue class does not implement 'peek'"
+                ) from ex
             if s:
                 return deserialize(s)
 
@@ -56,9 +54,7 @@ def _serializable_queue(queue_class, serialize, deserialize):
 
 
 def _scrapy_serialization_queue(queue_class):
-
     class ScrapyRequestQueue(queue_class):
-
         def __init__(self, crawler, key):
             self.spider = crawler.spider
             super().__init__(key)
@@ -93,7 +89,6 @@ def _scrapy_serialization_queue(queue_class):
 
 
 def _scrapy_non_serialization_queue(queue_class):
-
     class ScrapyRequestQueue(queue_class):
         @classmethod
         def from_crawler(cls, crawler, *args, **kwargs):
@@ -109,7 +104,9 @@ def _scrapy_non_serialization_queue(queue_class):
             try:
                 s = super().peek()
             except AttributeError as ex:
-                raise NotImplementedError("The underlying queue class does not implement 'peek'") from ex
+                raise NotImplementedError(
+                    "The underlying queue class does not implement 'peek'"
+                ) from ex
             return s
 
     return ScrapyRequestQueue
@@ -125,24 +122,16 @@ def _pickle_serialize(obj):
 
 
 _PickleFifoSerializationDiskQueue = _serializable_queue(
-    _with_mkdir(queue.FifoDiskQueue),
-    _pickle_serialize,
-    pickle.loads
+    _with_mkdir(queue.FifoDiskQueue), _pickle_serialize, pickle.loads
 )
 _PickleLifoSerializationDiskQueue = _serializable_queue(
-    _with_mkdir(queue.LifoDiskQueue),
-    _pickle_serialize,
-    pickle.loads
+    _with_mkdir(queue.LifoDiskQueue), _pickle_serialize, pickle.loads
 )
 _MarshalFifoSerializationDiskQueue = _serializable_queue(
-    _with_mkdir(queue.FifoDiskQueue),
-    marshal.dumps,
-    marshal.loads
+    _with_mkdir(queue.FifoDiskQueue), marshal.dumps, marshal.loads
 )
 _MarshalLifoSerializationDiskQueue = _serializable_queue(
-    _with_mkdir(queue.LifoDiskQueue),
-    marshal.dumps,
-    marshal.loads
+    _with_mkdir(queue.LifoDiskQueue), marshal.dumps, marshal.loads
 )
 
 # public queue classes

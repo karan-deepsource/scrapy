@@ -14,18 +14,19 @@ from scrapy.utils.boto import is_botocore_available
 
 
 def assert_gcs_environ():
-    if 'GCS_PROJECT_ID' not in os.environ:
+    if "GCS_PROJECT_ID" not in os.environ:
         raise SkipTest("GCS_PROJECT_ID not found")
 
 
 def skip_if_no_boto():
     if not is_botocore_available():
-        raise SkipTest('missing botocore library')
+        raise SkipTest("missing botocore library")
 
 
 def get_gcs_content_and_delete(bucket, path):
     from google.cloud import storage
-    client = storage.Client(project=os.environ.get('GCS_PROJECT_ID'))
+
+    client = storage.Client(project=os.environ.get("GCS_PROJECT_ID"))
     bucket = client.get_bucket(bucket)
     blob = bucket.get_blob(path)
     content = blob.download_as_string()
@@ -35,9 +36,10 @@ def get_gcs_content_and_delete(bucket, path):
 
 
 def get_ftp_content_and_delete(
-        path, host, port, username,
-        password, use_active_mode=False):
+    path, host, port, username, password, use_active_mode=False
+):
     from ftplib import FTP
+
     ftp = FTP()
     ftp.connect(host, port)
     ftp.login(username, password)
@@ -47,7 +49,8 @@ def get_ftp_content_and_delete(
 
     def buffer_data(data):
         ftp_data.append(data)
-    ftp.retrbinary(f'RETR {path}', buffer_data)
+
+    ftp.retrbinary(f"RETR {path}", buffer_data)
     dirname, filename = split(path)
     ftp.cwd(dirname)
     ftp.delete(filename)
@@ -69,8 +72,8 @@ def get_crawler(spidercls=None, settings_dict=None):
 def get_pythonpath():
     """Return a PYTHONPATH suitable to use in processes so that they find this
     installation of Scrapy"""
-    scrapy_path = import_module('scrapy').__path__[0]
-    return os.path.dirname(scrapy_path) + os.pathsep + os.environ.get('PYTHONPATH', '')
+    scrapy_path = import_module("scrapy").__path__[0]
+    return os.path.dirname(scrapy_path) + os.pathsep + os.environ.get("PYTHONPATH", "")
 
 
 def get_testenv():
@@ -78,7 +81,7 @@ def get_testenv():
     this installation of Scrapy, instead of a system installed one.
     """
     env = os.environ.copy()
-    env['PYTHONPATH'] = get_pythonpath()
+    env["PYTHONPATH"] = get_pythonpath()
     return env
 
 
@@ -101,6 +104,7 @@ def mock_google_cloud_storage():
     classes and set their proper return values.
     """
     from google.cloud.storage import Client, Bucket, Blob
+
     client_mock = mock.create_autospec(Client)
 
     bucket_mock = mock.create_autospec(Bucket)

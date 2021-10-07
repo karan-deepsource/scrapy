@@ -9,7 +9,7 @@ from tests.keys import generate_keys
 
 
 def _py_files(folder):
-    return (str(p) for p in Path(folder).rglob('*.py'))
+    return (str(p) for p in Path(folder).rglob("*.py"))
 
 
 collect_ignore = [
@@ -21,16 +21,16 @@ collect_ignore = [
     *_py_files("tests/CrawlerRunner"),
 ]
 
-with open('tests/ignores.txt') as reader:
+with open("tests/ignores.txt") as reader:
     for line in reader:
         file_path = line.strip()
-        if file_path and file_path[0] != '#':
+        if file_path and file_path[0] != "#":
             collect_ignore.append(file_path)
 
 if not H2_ENABLED:
     collect_ignore.extend(
         (
-            'scrapy/core/downloader/handlers/http2.py',
+            "scrapy/core/downloader/handlers/http2.py",
             *_py_files("scrapy/core/http2"),
         )
     )
@@ -46,7 +46,8 @@ def pytest_collection_modifyitems(session, config, items):
     # Avoid executing tests when executing `--flake8` flag (pytest-flake8)
     try:
         from pytest_flake8 import Flake8Item
-        if config.getoption('--flake8'):
+
+        if config.getoption("--flake8"):
             items[:] = [item for item in items if isinstance(item, Flake8Item)]
     except ImportError:
         pass
@@ -60,7 +61,7 @@ def pytest_addoption(parser):
     )
 
 
-@pytest.fixture(scope='class')
+@pytest.fixture(scope="class")
 def reactor_pytest(request):
     if not request.cls:
         # doctests
@@ -71,8 +72,8 @@ def reactor_pytest(request):
 
 @pytest.fixture(autouse=True)
 def only_asyncio(request, reactor_pytest):
-    if request.node.get_closest_marker('only_asyncio') and reactor_pytest != 'asyncio':
-        pytest.skip('This test is only run with --reactor=asyncio')
+    if request.node.get_closest_marker("only_asyncio") and reactor_pytest != "asyncio":
+        pytest.skip("This test is only run with --reactor=asyncio")
 
 
 def pytest_configure(config):

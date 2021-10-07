@@ -65,8 +65,10 @@ def request_fingerprint(
     if cache_key not in cache:
         fp = hashlib.sha1()
         fp.update(to_bytes(request.method))
-        fp.update(to_bytes(canonicalize_url(request.url, keep_fragments=keep_fragments)))
-        fp.update(request.body or b'')
+        fp.update(
+            to_bytes(canonicalize_url(request.url, keep_fragments=keep_fragments))
+        )
+        fp.update(request.body or b"")
         if headers:
             for hdr in headers:
                 if hdr in request.headers:
@@ -81,7 +83,7 @@ def request_authenticate(request: Request, username: str, password: str) -> None
     """Autenticate the given request (in place) using the HTTP basic access
     authentication mechanism (RFC 2617) and the given username and password
     """
-    request.headers['Authorization'] = basic_auth_header(username, password)
+    request.headers["Authorization"] = basic_auth_header(username, password)
 
 
 def request_httprepr(request: Request) -> bytes:
@@ -91,9 +93,9 @@ def request_httprepr(request: Request) -> bytes:
     by Twisted).
     """
     parsed = urlparse_cached(request)
-    path = urlunparse(('', '', parsed.path or '/', parsed.params, parsed.query, ''))
+    path = urlunparse(("", "", parsed.path or "/", parsed.params, parsed.query, ""))
     s = to_bytes(request.method) + b" " + to_bytes(path) + b" HTTP/1.1\r\n"
-    s += b"Host: " + to_bytes(parsed.hostname or b'') + b"\r\n"
+    s += b"Host: " + to_bytes(parsed.hostname or b"") + b"\r\n"
     if request.headers:
         s += request.headers.to_string() + b"\r\n"
     s += b"\r\n"
@@ -102,11 +104,11 @@ def request_httprepr(request: Request) -> bytes:
 
 
 def referer_str(request: Request) -> Optional[str]:
-    """ Return Referer HTTP header suitable for logging. """
-    referrer = request.headers.get('Referer')
+    """Return Referer HTTP header suitable for logging."""
+    referrer = request.headers.get("Referer")
     if referrer is None:
         return referrer
-    return to_unicode(referrer, errors='replace')
+    return to_unicode(referrer, errors="replace")
 
 
 def request_from_dict(d: dict, *, spider: Optional[Spider] = None) -> Request:
