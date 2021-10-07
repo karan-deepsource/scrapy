@@ -25,6 +25,7 @@ def defer_fail(_failure: Failure) -> Deferred:
     before attending pending delayed calls, so do not set delay to zero.
     """
     from twisted.internet import reactor
+
     d = Deferred()
     reactor.callLater(0.1, d.errback, _failure)
     return d
@@ -38,6 +39,7 @@ def defer_succeed(result) -> Deferred:
     before attending pending delayed calls, so do not set delay to zero.
     """
     from twisted.internet import reactor
+
     d = Deferred()
     reactor.callLater(0.1, d.callback, result)
     return d
@@ -69,7 +71,9 @@ def mustbe_deferred(f: Callable, *args, **kw) -> Deferred:
         return defer_result(result)
 
 
-def parallel(iterable: Iterable, count: int, callable: Callable, *args, **named) -> DeferredList:
+def parallel(
+    iterable: Iterable, count: int, callable: Callable, *args, **named
+) -> DeferredList:
     """Execute a callable over the objects in the given iterable, in parallel,
     using no more than ``count`` concurrent calls.
 
@@ -89,14 +93,19 @@ def process_chain(callbacks: Iterable[Callable], input, *a, **kw) -> Deferred:
     return d
 
 
-def process_chain_both(callbacks: Iterable[Callable], errbacks: Iterable[Callable], input, *a, **kw) -> Deferred:
+def process_chain_both(
+    callbacks: Iterable[Callable], errbacks: Iterable[Callable], input, *a, **kw
+) -> Deferred:
     """Return a Deferred built by chaining the given callbacks and errbacks"""
     d = Deferred()
     for cb, eb in zip(callbacks, errbacks):
         d.addCallbacks(
-            callback=cb, errback=eb,
-            callbackArgs=a, callbackKeywords=kw,
-            errbackArgs=a, errbackKeywords=kw,
+            callback=cb,
+            errback=eb,
+            callbackArgs=a,
+            callbackKeywords=kw,
+            errbackArgs=a,
+            errbackKeywords=kw,
         )
     if isinstance(input, failure.Failure):
         d.errback(input)
@@ -145,19 +154,21 @@ def deferred_from_coro(o) -> Any:
 
 
 def deferred_f_from_coro_f(coro_f: Callable[..., Coroutine]) -> Callable:
-    """ Converts a coroutine function into a function that returns a Deferred.
+    """Converts a coroutine function into a function that returns a Deferred.
 
     The coroutine function will be called at the time when the wrapper is called. Wrapper args will be passed to it.
     This is useful for callback chains, as callback functions are called with the previous callback result.
     """
+
     @wraps(coro_f)
     def f(*coro_args, **coro_kwargs):
         return deferred_from_coro(coro_f(*coro_args, **coro_kwargs))
+
     return f
 
 
 def maybeDeferred_coro(f: Callable, *args, **kw) -> Deferred:
-    """ Copy of defer.maybeDeferred that also converts coroutines to Deferreds. """
+    """Copy of defer.maybeDeferred that also converts coroutines to Deferreds."""
     try:
         result = f(*args, **kw)
     except:  # noqa: E722

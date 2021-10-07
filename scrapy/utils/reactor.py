@@ -9,11 +9,12 @@ from scrapy.utils.misc import load_object
 def listen_tcp(portrange, host, factory):
     """Like reactor.listenTCP but tries different ports in a range."""
     from twisted.internet import reactor
+
     if len(portrange) > 2:
         raise ValueError(f"invalid portrange: {portrange}")
     if not portrange:
         return reactor.listenTCP(0, factory, interface=host)
-    if not hasattr(portrange, '__iter__'):
+    if not hasattr(portrange, "__iter__"):
         return reactor.listenTCP(portrange, factory, interface=host)
     if len(portrange) == 1:
         return reactor.listenTCP(portrange[0], factory, interface=host)
@@ -38,6 +39,7 @@ class CallLaterOnce:
 
     def schedule(self, delay=0):
         from twisted.internet import reactor
+
         if self._call is None:
             self._call = reactor.callLater(delay, self)
 
@@ -77,14 +79,18 @@ def verify_installed_reactor(reactor_path):
     :mod:`~twisted.internet.reactor` does not match the specified import
     path."""
     from twisted.internet import reactor
+
     reactor_class = load_object(reactor_path)
     if not isinstance(reactor, reactor_class):
-        msg = ("The installed reactor "
-               f"({reactor.__module__}.{reactor.__class__.__name__}) does not "
-               f"match the requested one ({reactor_path})")
+        msg = (
+            "The installed reactor "
+            f"({reactor.__module__}.{reactor.__class__.__name__}) does not "
+            f"match the requested one ({reactor_path})"
+        )
         raise Exception(msg)
 
 
 def is_asyncio_reactor_installed():
     from twisted.internet import reactor
+
     return isinstance(reactor, asyncioreactor.AsyncioSelectorReactor)

@@ -25,7 +25,7 @@ class ScrapyCommand:
         self.settings = None  # set in scrapy.cmdline
 
     def set_crawler(self, crawler):
-        if hasattr(self, '_crawler'):
+        if hasattr(self, "_crawler"):
             raise RuntimeError("crawler already set")
         self._crawler = crawler
 
@@ -60,39 +60,54 @@ class ScrapyCommand:
         Populate option parse with options available for this command
         """
         group = OptionGroup(parser, "Global Options")
-        group.add_option("--logfile", metavar="FILE",
-                         help="log file. if omitted stderr will be used")
-        group.add_option("-L", "--loglevel", metavar="LEVEL", default=None,
-                         help=f"log level (default: {self.settings['LOG_LEVEL']})")
-        group.add_option("--nolog", action="store_true",
-                         help="disable logging completely")
-        group.add_option("--profile", metavar="FILE", default=None,
-                         help="write python cProfile stats to FILE")
-        group.add_option("--pidfile", metavar="FILE",
-                         help="write process ID to FILE")
-        group.add_option("-s", "--set", action="append", default=[], metavar="NAME=VALUE",
-                         help="set/override setting (may be repeated)")
+        group.add_option(
+            "--logfile", metavar="FILE", help="log file. if omitted stderr will be used"
+        )
+        group.add_option(
+            "-L",
+            "--loglevel",
+            metavar="LEVEL",
+            default=None,
+            help=f"log level (default: {self.settings['LOG_LEVEL']})",
+        )
+        group.add_option(
+            "--nolog", action="store_true", help="disable logging completely"
+        )
+        group.add_option(
+            "--profile",
+            metavar="FILE",
+            default=None,
+            help="write python cProfile stats to FILE",
+        )
+        group.add_option("--pidfile", metavar="FILE", help="write process ID to FILE")
+        group.add_option(
+            "-s",
+            "--set",
+            action="append",
+            default=[],
+            metavar="NAME=VALUE",
+            help="set/override setting (may be repeated)",
+        )
         group.add_option("--pdb", action="store_true", help="enable pdb on failure")
 
         parser.add_option_group(group)
 
     def process_options(self, args, opts):
         try:
-            self.settings.setdict(arglist_to_dict(opts.set),
-                                  priority='cmdline')
+            self.settings.setdict(arglist_to_dict(opts.set), priority="cmdline")
         except ValueError:
             raise UsageError("Invalid -s value, use -s NAME=VALUE", print_help=False)
 
         if opts.logfile:
-            self.settings.set('LOG_ENABLED', True, priority='cmdline')
-            self.settings.set('LOG_FILE', opts.logfile, priority='cmdline')
+            self.settings.set("LOG_ENABLED", True, priority="cmdline")
+            self.settings.set("LOG_FILE", opts.logfile, priority="cmdline")
 
         if opts.loglevel:
-            self.settings.set('LOG_ENABLED', True, priority='cmdline')
-            self.settings.set('LOG_LEVEL', opts.loglevel, priority='cmdline')
+            self.settings.set("LOG_ENABLED", True, priority="cmdline")
+            self.settings.set("LOG_LEVEL", opts.loglevel, priority="cmdline")
 
         if opts.nolog:
-            self.settings.set('LOG_ENABLED', False, priority='cmdline')
+            self.settings.set("LOG_ENABLED", False, priority="cmdline")
 
         if opts.pidfile:
             with open(opts.pidfile, "w") as f:
@@ -112,16 +127,37 @@ class BaseRunSpiderCommand(ScrapyCommand):
     """
     Common class used to share functionality between the crawl, parse and runspider commands
     """
+
     def add_options(self, parser):
         ScrapyCommand.add_options(self, parser)
-        parser.add_option("-a", dest="spargs", action="append", default=[], metavar="NAME=VALUE",
-                          help="set spider argument (may be repeated)")
-        parser.add_option("-o", "--output", metavar="FILE", action="append",
-                          help="append scraped items to the end of FILE (use - for stdout)")
-        parser.add_option("-O", "--overwrite-output", metavar="FILE", action="append",
-                          help="dump scraped items into FILE, overwriting any existing file")
-        parser.add_option("-t", "--output-format", metavar="FORMAT",
-                          help="format to use for dumping items")
+        parser.add_option(
+            "-a",
+            dest="spargs",
+            action="append",
+            default=[],
+            metavar="NAME=VALUE",
+            help="set spider argument (may be repeated)",
+        )
+        parser.add_option(
+            "-o",
+            "--output",
+            metavar="FILE",
+            action="append",
+            help="append scraped items to the end of FILE (use - for stdout)",
+        )
+        parser.add_option(
+            "-O",
+            "--overwrite-output",
+            metavar="FILE",
+            action="append",
+            help="dump scraped items into FILE, overwriting any existing file",
+        )
+        parser.add_option(
+            "-t",
+            "--output-format",
+            metavar="FORMAT",
+            help="format to use for dumping items",
+        )
 
     def process_options(self, args, opts):
         ScrapyCommand.process_options(self, args, opts)
@@ -136,4 +172,4 @@ class BaseRunSpiderCommand(ScrapyCommand):
                 opts.output_format,
                 opts.overwrite_output,
             )
-            self.settings.set('FEEDS', feeds, priority='cmdline')
+            self.settings.set("FEEDS", feeds, priority="cmdline")

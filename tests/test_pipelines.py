@@ -13,13 +13,13 @@ from tests.mockserver import MockServer
 
 class SimplePipeline:
     def process_item(self, item, spider):
-        item['pipeline_passed'] = True
+        item["pipeline_passed"] = True
         return item
 
 
 class DeferredPipeline:
     def cb(self, item):
-        item['pipeline_passed'] = True
+        item["pipeline_passed"] = True
         return item
 
     def process_item(self, item, spider):
@@ -32,25 +32,25 @@ class DeferredPipeline:
 class AsyncDefPipeline:
     async def process_item(self, item, spider):
         await defer.succeed(42)
-        item['pipeline_passed'] = True
+        item["pipeline_passed"] = True
         return item
 
 
 class AsyncDefAsyncioPipeline:
     async def process_item(self, item, spider):
         await asyncio.sleep(0.2)
-        item['pipeline_passed'] = await get_from_asyncio_queue(True)
+        item["pipeline_passed"] = await get_from_asyncio_queue(True)
         return item
 
 
 class ItemSpider(Spider):
-    name = 'itemspider'
+    name = "itemspider"
 
     def start_requests(self):
-        yield Request(self.mockserver.url('/status?n=200'))
+        yield Request(self.mockserver.url("/status?n=200"))
 
     def parse(self, response):
-        return {'field': 42}
+        return {"field": 42}
 
 
 class PipelineTestCase(unittest.TestCase):
@@ -63,12 +63,12 @@ class PipelineTestCase(unittest.TestCase):
 
     def _on_item_scraped(self, item):
         self.assertIsInstance(item, dict)
-        self.assertTrue(item.get('pipeline_passed'))
+        self.assertTrue(item.get("pipeline_passed"))
         self.items.append(item)
 
     def _create_crawler(self, pipeline_class):
         settings = {
-            'ITEM_PIPELINES': {pipeline_class: 1},
+            "ITEM_PIPELINES": {pipeline_class: 1},
         }
         crawler = get_crawler(ItemSpider, settings)
         crawler.signals.connect(self._on_item_scraped, signals.item_scraped)
