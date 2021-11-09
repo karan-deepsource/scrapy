@@ -22,24 +22,41 @@ class BytesReceivedCrawlerRun(CrawlerRun):
 class BytesReceivedEngineTest(EngineTest):
     @defer.inlineCallbacks
     def test_crawler(self):
-        for spider in (TestSpider, DictItemsSpider, AttrsItemsSpider, DataClassItemsSpider):
+        for spider in (
+            TestSpider,
+            DictItemsSpider,
+            AttrsItemsSpider,
+            DataClassItemsSpider,
+        ):
             if spider is None:
                 continue
             self.run = BytesReceivedCrawlerRun(spider)
             with LogCapture() as log:
                 yield self.run.run()
-                log.check_present(("scrapy.core.downloader.handlers.http11",
-                                   "DEBUG",
-                                   f"Download stopped for <GET http://localhost:{self.run.portno}/redirected> "
-                                   "from signal handler BytesReceivedCrawlerRun.bytes_received"))
-                log.check_present(("scrapy.core.downloader.handlers.http11",
-                                   "DEBUG",
-                                   f"Download stopped for <GET http://localhost:{self.run.portno}/> "
-                                   "from signal handler BytesReceivedCrawlerRun.bytes_received"))
-                log.check_present(("scrapy.core.downloader.handlers.http11",
-                                   "DEBUG",
-                                   f"Download stopped for <GET http://localhost:{self.run.portno}/numbers> "
-                                   "from signal handler BytesReceivedCrawlerRun.bytes_received"))
+                log.check_present(
+                    (
+                        "scrapy.core.downloader.handlers.http11",
+                        "DEBUG",
+                        f"Download stopped for <GET http://localhost:{self.run.portno}/redirected> "
+                        "from signal handler BytesReceivedCrawlerRun.bytes_received",
+                    )
+                )
+                log.check_present(
+                    (
+                        "scrapy.core.downloader.handlers.http11",
+                        "DEBUG",
+                        f"Download stopped for <GET http://localhost:{self.run.portno}/> "
+                        "from signal handler BytesReceivedCrawlerRun.bytes_received",
+                    )
+                )
+                log.check_present(
+                    (
+                        "scrapy.core.downloader.handlers.http11",
+                        "DEBUG",
+                        f"Download stopped for <GET http://localhost:{self.run.portno}/numbers> "
+                        "from signal handler BytesReceivedCrawlerRun.bytes_received",
+                    )
+                )
             self._assert_visited_urls()
             self._assert_scheduled_requests(count=9)
             self._assert_downloaded_responses(count=9)
@@ -56,5 +73,5 @@ class BytesReceivedEngineTest(EngineTest):
                 # Received bytes are not the complete response. The exact amount depends
                 # on the buffer size, which can vary, so we only check that the amount
                 # of received bytes is strictly less than the full response.
-                numbers = [str(x).encode("utf8") for x in range(2**18)]
+                numbers = [str(x).encode("utf8") for x in range(2 ** 18)]
                 self.assertTrue(len(joined_data) < len(b"".join(numbers)))

@@ -1,5 +1,5 @@
 EXTENSIONS = {
-    'tests.test_cmdline.extensions.TestExtension': 0,
+    "tests.test_cmdline.extensions.TestExtension": 0,
 }
 
-TEST1 = 'default'
+TEST1 = "default"

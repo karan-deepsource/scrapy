@@ -70,7 +70,10 @@ class RequestQueueTestMixin:
         req = Request("http://www.example.com")
         q.push(req)
         self.assertEqual(len(q), 1)
-        with self.assertRaises(NotImplementedError, msg="The underlying queue class does not implement 'peek'"):
+        with self.assertRaises(
+            NotImplementedError,
+            msg="The underlying queue class does not implement 'peek'",
+        ):
             q.peek()
         self.assertEqual(q.pop().url, req.url)
         self.assertEqual(len(q), 0)
@@ -118,7 +121,10 @@ class FifoQueueMixin(RequestQueueTestMixin):
         q.push(req1)
         q.push(req2)
         q.push(req3)
-        with self.assertRaises(NotImplementedError, msg="The underlying queue class does not implement 'peek'"):
+        with self.assertRaises(
+            NotImplementedError,
+            msg="The underlying queue class does not implement 'peek'",
+        ):
             q.peek()
         self.assertEqual(len(q), 3)
         self.assertEqual(q.pop().url, req1.url)
@@ -171,7 +177,10 @@ class LifoQueueMixin(RequestQueueTestMixin):
         q.push(req1)
         q.push(req2)
         q.push(req3)
-        with self.assertRaises(NotImplementedError, msg="The underlying queue class does not implement 'peek'"):
+        with self.assertRaises(
+            NotImplementedError,
+            msg="The underlying queue class does not implement 'peek'",
+        ):
             q.peek()
         self.assertEqual(len(q), 3)
         self.assertEqual(q.pop().url, req3.url)
@@ -196,12 +205,16 @@ class PickleLifoDiskQueueRequestTest(LifoQueueMixin, BaseQueueTestCase):
 
 class MarshalFifoDiskQueueRequestTest(FifoQueueMixin, BaseQueueTestCase):
     def queue(self):
-        return MarshalFifoDiskQueue.from_crawler(crawler=self.crawler, key="marshal/fifo")
+        return MarshalFifoDiskQueue.from_crawler(
+            crawler=self.crawler, key="marshal/fifo"
+        )
 
 
 class MarshalLifoDiskQueueRequestTest(LifoQueueMixin, BaseQueueTestCase):
     def queue(self):
-        return MarshalLifoDiskQueue.from_crawler(crawler=self.crawler, key="marshal/lifo")
+        return MarshalLifoDiskQueue.from_crawler(
+            crawler=self.crawler, key="marshal/lifo"
+        )
 
 
 class FifoMemoryQueueRequestTest(FifoQueueMixin, BaseQueueTestCase):

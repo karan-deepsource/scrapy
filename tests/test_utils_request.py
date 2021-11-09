@@ -9,15 +9,14 @@ from scrapy.utils.request import (
 
 
 class UtilsRequestTest(unittest.TestCase):
-
     def test_request_fingerprint(self):
         r1 = Request("http://www.example.com/query?id=111&cat=222")
         r2 = Request("http://www.example.com/query?cat=222&id=111")
         self.assertEqual(request_fingerprint(r1), request_fingerprint(r1))
         self.assertEqual(request_fingerprint(r1), request_fingerprint(r2))
 
-        r1 = Request('http://www.example.com/hnnoticiaj1.aspx?78132,199')
-        r2 = Request('http://www.example.com/hnnoticiaj1.aspx?78160,199')
+        r1 = Request("http://www.example.com/hnnoticiaj1.aspx?78132,199")
+        r2 = Request("http://www.example.com/hnnoticiaj1.aspx?78160,199")
         self.assertNotEqual(request_fingerprint(r1), request_fingerprint(r2))
 
         # make sure caching is working
@@ -25,38 +24,51 @@ class UtilsRequestTest(unittest.TestCase):
 
         r1 = Request("http://www.example.com/members/offers.html")
         r2 = Request("http://www.example.com/members/offers.html")
-        r2.headers['SESSIONID'] = b"somehash"
+        r2.headers["SESSIONID"] = b"somehash"
         self.assertEqual(request_fingerprint(r1), request_fingerprint(r2))
 
         r1 = Request("http://www.example.com/")
         r2 = Request("http://www.example.com/")
-        r2.headers['Accept-Language'] = b'en'
+        r2.headers["Accept-Language"] = b"en"
         r3 = Request("http://www.example.com/")
-        r3.headers['Accept-Language'] = b'en'
-        r3.headers['SESSIONID'] = b"somehash"
+        r3.headers["Accept-Language"] = b"en"
+        r3.headers["SESSIONID"] = b"somehash"
 
-        self.assertEqual(request_fingerprint(r1), request_fingerprint(r2), request_fingerprint(r3))
+        self.assertEqual(
+            request_fingerprint(r1), request_fingerprint(r2), request_fingerprint(r3)
+        )
 
-        self.assertEqual(request_fingerprint(r1),
-                         request_fingerprint(r1, include_headers=['Accept-Language']))
+        self.assertEqual(
+            request_fingerprint(r1),
+            request_fingerprint(r1, include_headers=["Accept-Language"]),
+        )
 
         self.assertNotEqual(
             request_fingerprint(r1),
-            request_fingerprint(r2, include_headers=['Accept-Language']))
+            request_fingerprint(r2, include_headers=["Accept-Language"]),
+        )
 
-        self.assertEqual(request_fingerprint(r3, include_headers=['accept-language', 'sessionid']),
-                         request_fingerprint(r3, include_headers=['SESSIONID', 'Accept-Language']))
+        self.assertEqual(
+            request_fingerprint(r3, include_headers=["accept-language", "sessionid"]),
+            request_fingerprint(r3, include_headers=["SESSIONID", "Accept-Language"]),
+        )
 
         r1 = Request("http://www.example.com/test.html")
         r2 = Request("http://www.example.com/test.html#fragment")
         self.assertEqual(request_fingerprint(r1), request_fingerprint(r2))
-        self.assertEqual(request_fingerprint(r1), request_fingerprint(r1, keep_fragments=True))
-        self.assertNotEqual(request_fingerprint(r2), request_fingerprint(r2, keep_fragments=True))
-        self.assertNotEqual(request_fingerprint(r1), request_fingerprint(r2, keep_fragments=True))
+        self.assertEqual(
+            request_fingerprint(r1), request_fingerprint(r1, keep_fragments=True)
+        )
+        self.assertNotEqual(
+            request_fingerprint(r2), request_fingerprint(r2, keep_fragments=True)
+        )
+        self.assertNotEqual(
+            request_fingerprint(r1), request_fingerprint(r2, keep_fragments=True)
+        )
 
         r1 = Request("http://www.example.com")
-        r2 = Request("http://www.example.com", method='POST')
-        r3 = Request("http://www.example.com", method='POST', body=b'request body')
+        r2 = Request("http://www.example.com", method="POST")
+        r3 = Request("http://www.example.com", method="POST", body=b"request body")
 
         self.assertNotEqual(request_fingerprint(r1), request_fingerprint(r2))
         self.assertNotEqual(request_fingerprint(r2), request_fingerprint(r3))
@@ -70,21 +82,30 @@ class UtilsRequestTest(unittest.TestCase):
 
     def test_request_authenticate(self):
         r = Request("http://www.example.com")
-        request_authenticate(r, 'someuser', 'somepass')
-        self.assertEqual(r.headers['Authorization'], b'Basic c29tZXVzZXI6c29tZXBhc3M=')
+        request_authenticate(r, "someuser", "somepass")
+        self.assertEqual(r.headers["Authorization"], b"Basic c29tZXVzZXI6c29tZXBhc3M=")
 
     def test_request_httprepr(self):
         r1 = Request("http://www.example.com")
-        self.assertEqual(request_httprepr(r1), b'GET / HTTP/1.1\r\nHost: www.example.com\r\n\r\n')
+        self.assertEqual(
+            request_httprepr(r1), b"GET / HTTP/1.1\r\nHost: www.example.com\r\n\r\n"
+        )
 
         r1 = Request("http://www.example.com/some/page.html?arg=1")
-        self.assertEqual(request_httprepr(r1), b'GET /some/page.html?arg=1 HTTP/1.1\r\nHost: www.example.com\r\n\r\n')
-
-        r1 = Request("http://www.example.com", method='POST',
-                     headers={"Content-type": b"text/html"}, body=b"Some body")
         self.assertEqual(
             request_httprepr(r1),
-            b'POST / HTTP/1.1\r\nHost: www.example.com\r\nContent-Type: text/html\r\n\r\nSome body'
+            b"GET /some/page.html?arg=1 HTTP/1.1\r\nHost: www.example.com\r\n\r\n",
+        )
+
+        r1 = Request(
+            "http://www.example.com",
+            method="POST",
+            headers={"Content-type": b"text/html"},
+            body=b"Some body",
+        )
+        self.assertEqual(
+            request_httprepr(r1),
+            b"POST / HTTP/1.1\r\nHost: www.example.com\r\nContent-Type: text/html\r\n\r\nSome body",
         )
 
     def test_request_httprepr_for_non_http_request(self):

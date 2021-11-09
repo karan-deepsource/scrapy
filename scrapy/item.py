@@ -20,14 +20,18 @@ class _BaseItem(object_ref):
     Temporary class used internally to avoid the deprecation
     warning raised by isinstance checks using BaseItem.
     """
+
     pass
 
 
 class _BaseItemMeta(ABCMeta):
     def __instancecheck__(cls, instance):
         if cls is BaseItem:
-            warn('scrapy.item.BaseItem is deprecated, please use scrapy.item.Item instead',
-                 ScrapyDeprecationWarning, stacklevel=2)
+            warn(
+                "scrapy.item.BaseItem is deprecated, please use scrapy.item.Item instead",
+                ScrapyDeprecationWarning,
+                stacklevel=2,
+            )
         return super().__instancecheck__(instance)
 
 
@@ -38,8 +42,11 @@ class BaseItem(_BaseItem, metaclass=_BaseItemMeta):
 
     def __new__(cls, *args, **kwargs):
         if issubclass(cls, BaseItem) and not issubclass(cls, (Item, DictItem)):
-            warn('scrapy.item.BaseItem is deprecated, please use scrapy.item.Item instead',
-                 ScrapyDeprecationWarning, stacklevel=2)
+            warn(
+                "scrapy.item.BaseItem is deprecated, please use scrapy.item.Item instead",
+                ScrapyDeprecationWarning,
+                stacklevel=2,
+            )
         return super().__new__(cls, *args, **kwargs)
 
 
@@ -54,11 +61,11 @@ class ItemMeta(_BaseItemMeta):
     """
 
     def __new__(mcs, class_name, bases, attrs):
-        classcell = attrs.pop('__classcell__', None)
-        new_bases = tuple(base._class for base in bases if hasattr(base, '_class'))
-        _class = super().__new__(mcs, 'x_' + class_name, new_bases, attrs)
+        classcell = attrs.pop("__classcell__", None)
+        new_bases = tuple(base._class for base in bases if hasattr(base, "_class"))
+        _class = super().__new__(mcs, "x_" + class_name, new_bases, attrs)
 
-        fields = getattr(_class, 'fields', {})
+        fields = getattr(_class, "fields", {})
         new_attrs = {}
         for n in dir(_class):
             v = getattr(_class, n)
@@ -67,10 +74,10 @@ class ItemMeta(_BaseItemMeta):
             elif n in attrs:
                 new_attrs[n] = attrs[n]
 
-        new_attrs['fields'] = fields
-        new_attrs['_class'] = _class
+        new_attrs["fields"] = fields
+        new_attrs["_class"] = _class
         if classcell is not None:
-            new_attrs['__classcell__'] = classcell
+            new_attrs["__classcell__"] = classcell
         return super().__new__(mcs, class_name, bases, new_attrs)
 
 
@@ -80,8 +87,11 @@ class DictItem(MutableMapping, BaseItem):
 
     def __new__(cls, *args, **kwargs):
         if issubclass(cls, DictItem) and not issubclass(cls, Item):
-            warn('scrapy.item.DictItem is deprecated, please use scrapy.item.Item instead',
-                 ScrapyDeprecationWarning, stacklevel=2)
+            warn(
+                "scrapy.item.DictItem is deprecated, please use scrapy.item.Item instead",
+                ScrapyDeprecationWarning,
+                stacklevel=2,
+            )
         return super().__new__(cls, *args, **kwargs)
 
     def __init__(self, *args, **kwargs):
@@ -108,7 +118,7 @@ class DictItem(MutableMapping, BaseItem):
         raise AttributeError(name)
 
     def __setattr__(self, name, value):
-        if not name.startswith('_'):
+        if not name.startswith("_"):
             raise AttributeError(f"Use item[{name!r}] = {value!r} to set field value")
         super().__setattr__(name, value)
 
@@ -130,8 +140,7 @@ class DictItem(MutableMapping, BaseItem):
         return self.__class__(self)
 
     def deepcopy(self):
-        """Return a :func:`~copy.deepcopy` of this item.
-        """
+        """Return a :func:`~copy.deepcopy` of this item."""
         return deepcopy(self)
 
 

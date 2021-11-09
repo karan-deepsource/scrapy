@@ -23,31 +23,35 @@ def get_base_url(response: "scrapy.http.response.text.TextResponse") -> str:
     """Return the base url of the given response, joined with the response url"""
     if response not in _baseurl_cache:
         text = response.text[0:4096]
-        _baseurl_cache[response] = html.get_base_url(text, response.url, response.encoding)
+        _baseurl_cache[response] = html.get_base_url(
+            text, response.url, response.encoding
+        )
     return _baseurl_cache[response]
 
 
-_metaref_cache: "WeakKeyDictionary[Response, Union[Tuple[None, None], Tuple[float, str]]]" = WeakKeyDictionary()
+_metaref_cache: "WeakKeyDictionary[Response, Union[Tuple[None, None], Tuple[float, str]]]" = (
+    WeakKeyDictionary()
+)
 
 
 def get_meta_refresh(
     response: "scrapy.http.response.text.TextResponse",
-    ignore_tags: Optional[Iterable[str]] = ('script', 'noscript'),
+    ignore_tags: Optional[Iterable[str]] = ("script", "noscript"),
 ) -> Union[Tuple[None, None], Tuple[float, str]]:
     """Parse the http-equiv refrsh parameter from the given response"""
     if response not in _metaref_cache:
         text = response.text[0:4096]
         _metaref_cache[response] = html.get_meta_refresh(
-            text, response.url, response.encoding, ignore_tags=ignore_tags)
+            text, response.url, response.encoding, ignore_tags=ignore_tags
+        )
     return _metaref_cache[response]
 
 
 def response_status_message(status: Union[bytes, float, int, str]) -> str:
-    """Return status code plus status text descriptive message
-    """
+    """Return status code plus status text descriptive message"""
     status_int = int(status)
     message = http.RESPONSES.get(status_int, "Unknown Status")
-    return f'{status_int} {to_unicode(message)}'
+    return f"{status_int} {to_unicode(message)}"
 
 
 def response_httprepr(response: Response) -> bytes:
@@ -59,7 +63,7 @@ def response_httprepr(response: Response) -> bytes:
         b"HTTP/1.1 ",
         to_bytes(str(response.status)),
         b" ",
-        to_bytes(http.RESPONSES.get(response.status, b'')),
+        to_bytes(http.RESPONSES.get(response.status, b"")),
         b"\r\n",
     ]
     if response.headers:
@@ -69,25 +73,28 @@ def response_httprepr(response: Response) -> bytes:
 
 
 def open_in_browser(
-    response: Union["scrapy.http.response.html.HtmlResponse", "scrapy.http.response.text.TextResponse"],
+    response: Union[
+        "scrapy.http.response.html.HtmlResponse",
+        "scrapy.http.response.text.TextResponse",
+    ],
     _openfunc: Callable[[str], Any] = webbrowser.open,
 ) -> Any:
     """Open the given response in a local web browser, populating the <base>
     tag for external links to work
     """
     from scrapy.http import HtmlResponse, TextResponse
+
     # XXX: this implementation is a bit dirty and could be improved
     body = response.body
     if isinstance(response, HtmlResponse):
-        if b'<base' not in body:
+        if b"<base" not in body:
             repl = f'<head><base href="{response.url}">'
-            body = body.replace(b'<head>', to_bytes(repl))
-        ext = '.html'
+            body = body.replace(b"<head>", to_bytes(repl))
+        ext = ".html"
     elif isinstance(response, TextResponse):
-        ext = '.txt'
+        ext = ".txt"
     else:
-        raise TypeError("Unsupported response type: "
-                        f"{response.__class__.__name__}")
+        raise TypeError("Unsupported response type: " f"{response.__class__.__name__}")
     fd, fname = tempfile.mkstemp(ext)
     os.write(fd, body)
     os.close(fd)
