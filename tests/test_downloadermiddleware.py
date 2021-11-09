@@ -23,14 +23,14 @@ class ManagerTestCase(TestCase):
 
     def setUp(self):
         self.crawler = get_crawler(Spider, self.settings_dict)
-        self.spider = self.crawler._create_spider('foo')
+        self.spider = self.crawler._create_spider("foo")
         self.mwman = DownloaderMiddlewareManager.from_crawler(self.crawler)
         # some mw depends on stats collector
         self.crawler.stats.open_spider(self.spider)
         return self.mwman.open_spider(self.spider)
 
     def tearDown(self):
-        self.crawler.stats.close_spider(self.spider, '')
+        self.crawler.stats.close_spider(self.spider, "")
         return self.mwman.close_spider(self.spider)
 
     def _download(self, request, response=None):
@@ -59,7 +59,7 @@ class DefaultsTest(ManagerTestCase):
     """Tests default behavior with default settings"""
 
     def test_request_response(self):
-        req = Request('http://example.com/index.html')
+        req = Request("http://example.com/index.html")
         resp = Response(req.url, status=200)
         ret = self._download(req, resp)
         self.assertTrue(isinstance(ret, Response), "Non-response returned")
@@ -76,29 +76,41 @@ class DefaultsTest(ManagerTestCase):
             exceptions.IOError: Not a gzipped file
 
         """
-        req = Request('http://example.com')
-        body = b'<p>You are being redirected</p>'
-        resp = Response(req.url, status=302, body=body, headers={
-            'Content-Length': str(len(body)),
-            'Content-Type': 'text/html',
-            'Content-Encoding': 'gzip',
-            'Location': 'http://example.com/login',
-        })
+        req = Request("http://example.com")
+        body = b"<p>You are being redirected</p>"
+        resp = Response(
+            req.url,
+            status=302,
+            body=body,
+            headers={
+                "Content-Length": str(len(body)),
+                "Content-Type": "text/html",
+                "Content-Encoding": "gzip",
+                "Location": "http://example.com/login",
+            },
+        )
         ret = self._download(request=req, response=resp)
-        self.assertTrue(isinstance(ret, Request),
-                        f"Not redirected: {ret!r}")
-        self.assertEqual(to_bytes(ret.url), resp.headers['Location'],
-                         "Not redirected to location header")
+        self.assertTrue(isinstance(ret, Request), f"Not redirected: {ret!r}")
+        self.assertEqual(
+            to_bytes(ret.url),
+            resp.headers["Location"],
+            "Not redirected to location header",
+        )
 
     def test_200_and_invalid_gzipped_body_must_fail(self):
-        req = Request('http://example.com')
-        body = b'<p>You are being redirected</p>'
-        resp = Response(req.url, status=200, body=body, headers={
-            'Content-Length': str(len(body)),
-            'Content-Type': 'text/html',
-            'Content-Encoding': 'gzip',
-            'Location': 'http://example.com/login',
-        })
+        req = Request("http://example.com")
+        body = b"<p>You are being redirected</p>"
+        resp = Response(
+            req.url,
+            status=200,
+            body=body,
+            headers={
+                "Content-Length": str(len(body)),
+                "Content-Type": "text/html",
+                "Content-Encoding": "gzip",
+                "Location": "http://example.com/login",
+            },
+        )
         self.assertRaises(IOError, self._download, request=req, response=resp)
 
 
@@ -106,7 +118,7 @@ class ResponseFromProcessRequestTest(ManagerTestCase):
     """Tests middleware returning a response from process_request."""
 
     def test_download_func_not_called(self):
-        resp = Response('http://example.com/index.html')
+        resp = Response("http://example.com/index.html")
 
         class ResponseMiddleware:
             def process_request(self, request, spider):
@@ -114,7 +126,7 @@ class ResponseFromProcessRequestTest(ManagerTestCase):
 
         self.mwman._add_middleware(ResponseMiddleware())
 
-        req = Request('http://example.com/index.html')
+        req = Request("http://example.com/index.html")
         download_func = mock.MagicMock()
         dfd = self.mwman.download(download_func, req, self.spider)
         results = []
@@ -129,7 +141,7 @@ class ProcessRequestInvalidOutput(ManagerTestCase):
     """Invalid return value for process_request method should raise an exception"""
 
     def test_invalid_process_request(self):
-        req = Request('http://example.com/index.html')
+        req = Request("http://example.com/index.html")
 
         class InvalidProcessRequestMiddleware:
             def process_request(self, request, spider):
@@ -148,7 +160,7 @@ class ProcessResponseInvalidOutput(ManagerTestCase):
     """Invalid return value for process_response method should raise an exception"""
 
     def test_invalid_process_response(self):
-        req = Request('http://example.com/index.html')
+        req = Request("http://example.com/index.html")
 
         class InvalidProcessResponseMiddleware:
             def process_response(self, request, response, spider):
@@ -167,7 +179,7 @@ class ProcessExceptionInvalidOutput(ManagerTestCase):
     """Invalid return value for process_exception method should raise an exception"""
 
     def test_invalid_process_exception(self):
-        req = Request('http://example.com/index.html')
+        req = Request("http://example.com/index.html")
 
         class InvalidProcessExceptionMiddleware:
             def process_request(self, request, spider):
@@ -189,7 +201,7 @@ class MiddlewareUsingDeferreds(ManagerTestCase):
     """Middlewares using Deferreds should work"""
 
     def test_deferred(self):
-        resp = Response('http://example.com/index.html')
+        resp = Response("http://example.com/index.html")
 
         class DeferredMiddleware:
             def cb(self, result):
@@ -202,7 +214,7 @@ class MiddlewareUsingDeferreds(ManagerTestCase):
                 return d
 
         self.mwman._add_middleware(DeferredMiddleware())
-        req = Request('http://example.com/index.html')
+        req = Request("http://example.com/index.html")
         download_func = mock.MagicMock()
         dfd = self.mwman.download(download_func, req, self.spider)
         results = []
@@ -213,22 +225,21 @@ class MiddlewareUsingDeferreds(ManagerTestCase):
         self.assertFalse(download_func.called)
 
 
-@mark.usefixtures('reactor_pytest')
+@mark.usefixtures("reactor_pytest")
 class MiddlewareUsingCoro(ManagerTestCase):
     """Middlewares using asyncio coroutines should work"""
 
     def test_asyncdef(self):
-        if (
-            self.reactor_pytest == 'asyncio'
-            and twisted_version < Version('twisted', 18, 4, 0)
+        if self.reactor_pytest == "asyncio" and twisted_version < Version(
+            "twisted", 18, 4, 0
         ):
             raise SkipTest(
-                'Due to https://twistedmatrix.com/trac/ticket/9390, this test '
-                'hangs when using AsyncIO and Twisted versions lower than '
-                '18.4.0'
+                "Due to https://twistedmatrix.com/trac/ticket/9390, this test "
+                "hangs when using AsyncIO and Twisted versions lower than "
+                "18.4.0"
             )
 
-        resp = Response('http://example.com/index.html')
+        resp = Response("http://example.com/index.html")
 
         class CoroMiddleware:
             async def process_request(self, request, spider):
@@ -236,7 +247,7 @@ class MiddlewareUsingCoro(ManagerTestCase):
                 return resp
 
         self.mwman._add_middleware(CoroMiddleware())
-        req = Request('http://example.com/index.html')
+        req = Request("http://example.com/index.html")
         download_func = mock.MagicMock()
         dfd = self.mwman.download(download_func, req, self.spider)
         results = []
@@ -248,13 +259,13 @@ class MiddlewareUsingCoro(ManagerTestCase):
 
     @mark.only_asyncio()
     def test_asyncdef_asyncio(self):
-        if twisted_version < Version('twisted', 18, 4, 0):
+        if twisted_version < Version("twisted", 18, 4, 0):
             raise SkipTest(
-                'Due to https://twistedmatrix.com/trac/ticket/9390, this test '
-                'hangs when using Twisted versions lower than 18.4.0'
+                "Due to https://twistedmatrix.com/trac/ticket/9390, this test "
+                "hangs when using Twisted versions lower than 18.4.0"
             )
 
-        resp = Response('http://example.com/index.html')
+        resp = Response("http://example.com/index.html")
 
         class CoroMiddleware:
             async def process_request(self, request, spider):
@@ -263,7 +274,7 @@ class MiddlewareUsingCoro(ManagerTestCase):
                 return result
 
         self.mwman._add_middleware(CoroMiddleware())
-        req = Request('http://example.com/index.html')
+        req = Request("http://example.com/index.html")
         download_func = mock.MagicMock()
         dfd = self.mwman.download(download_func, req, self.spider)
         results = []

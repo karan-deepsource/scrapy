@@ -29,7 +29,7 @@ def generate_keys():
         key_size=2048,
         backend=default_backend(),
     )
-    with open(os.path.join(folder, 'localhost.key'), "wb") as f:
+    with open(os.path.join(folder, "localhost.key"), "wb") as f:
         f.write(
             key.private_bytes(
                 encoding=Encoding.PEM,
@@ -59,5 +59,5 @@ def generate_keys():
         )
         .sign(key, SHA256(), default_backend())
     )
-    with open(os.path.join(folder, 'localhost.crt'), "wb") as f:
+    with open(os.path.join(folder, "localhost.crt"), "wb") as f:
         f.write(cert.public_bytes(Encoding.PEM))
